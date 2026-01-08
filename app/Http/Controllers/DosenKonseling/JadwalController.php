@@ -140,10 +140,9 @@ class JadwalController extends Controller
         return view('dosen-konseling.jadwal.mulai-sesi', compact('jadwal'));
     }
 
-    // ========== FITUR SIMPAN SESI (YANG DIPERBAIKI) ==========
+    // ========== FITUR SIMPAN SESI (FINAL FIX) ==========
     public function simpanSesi(Request $request, JadwalKonseling $jadwal)
     {
-        // 1. Validasi Input (Harus sesuai dengan name di View mulai-sesi.blade.php)
         $request->validate([
             'hasil_konseling' => 'required|string|min:5',
             'rekomendasi' => 'nullable|string',
@@ -151,24 +150,26 @@ class JadwalController extends Controller
         ]);
 
         try {
-            // 2. Simpan Hasil Konseling
-            // Menggunakan updateOrCreate untuk mencegah duplikasi jika tombol ditekan 2x
+            // FIX: Mapping input form ke kolom database yang valid
+            // Tabel 'hasil_konseling' tidak punya kolom 'tgl_konseling' (pakai timestamps)
+            // Tabel 'hasil_konseling' tidak punya kolom 'hasil_konseling', tapi 'diagnosis'
+            
             HasilKonseling::updateOrCreate(
                 ['id_jadwal' => $jadwal->id_jadwal],
                 [
-                    'id_konseling' => $jadwal->id_konseling,
-                    'tgl_konseling' => Carbon::now(),
-                    'hasil_konseling' => $request->hasil_konseling,
+                    // 'tgl_konseling' => Carbon::now(), // HAPUS INI (Kolom tidak ada di DB)
+                    // 'hasil_konseling' => $request->hasil_konseling, // HAPUS INI (Kolom tidak ada di DB)
+                    
+                    'diagnosis' => $request->hasil_konseling, // GUNAKAN INI (Mapping ke kolom 'diagnosis')
                     'rekomendasi' => $request->rekomendasi,
-                    // 'diagnosis' => $request->hasil_konseling, // Uncomment jika DB masih butuh kolom legacy
+                    
+                    // Kolom lain jika diperlukan defaultnya:
+                    // 'prognosis' => '-', 
+                    // 'evaluasi' => '-',
                 ]
             );
 
-            // 3. Update Status Sesi Jadwal -> Selesai
-            // Asumsi ada kolom status_sesi di tabel jadwal_konseling (tambahkan jika belum ada di migration)
-            // $jadwal->update(['status_sesi' => 'Selesai']); 
-
-            // 4. Update Status Utama Konseling
+            // Update Status Utama Konseling
             $konseling = $jadwal->konseling;
             $konseling->status_konseling = $request->status_akhir;
             $konseling->save();
@@ -177,7 +178,6 @@ class JadwalController extends Controller
                              ->with('success', 'Hasil sesi konseling berhasil disimpan dan status diperbarui.');
 
         } catch (\Exception $e) {
-            // TANGKAP ERROR SQL: Ini akan memberi tahu kalau ada kolom database yang kurang
             return back()->with('error', 'Gagal menyimpan sesi: ' . $e->getMessage())->withInput();
         }
     }
