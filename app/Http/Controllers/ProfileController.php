@@ -2,89 +2,88 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Storage; // <-- PENTING
-use Illuminate\View\View;
 
-class ProfileController extends Controller
+class PublicController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
-    public function edit(Request $request): View
+    public function welcome()
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
+        // 1. DATA LANDASAN HUKUM (Dipindah ke sini)
+        $dokumen = [
+            [
+                'judul' => 'SOP Layanan Bimbingan Konseling',
+                'nomor' => 'SOP-0001/UPBK/IX/2025',
+                'tahun' => '2025',
+                'deskripsi' => 'Pedoman standar alur pendaftaran, pelaksanaan konseling, hingga evaluasi. Wajib dibaca oleh mahasiswa sebelum mengajukan konseling.',
+                'file' => 'sop-bk-2025.pdf', 
+                'kategori' => 'SOP'
+            ],
+            [
+                'judul' => 'Kebijakan Pengelolaan & Fungsi UPBK',
+                'nomor' => '0470/131013/RKT/SK/IX/2025',
+                'tahun' => '2025',
+                'deskripsi' => 'Landasan operasional yang mengatur jenis pelayanan (Pribadi, Sosial, Akademik, Karir) serta tugas dan fungsi konselor di UBBG.',
+                'file' => 'sk-kebijakan-2025.pdf',
+                'kategori' => 'SK Rektor'
+            ],
+            [
+                'judul' => 'SK Pembentukan Unit Layanan Kesehatan & BK',
+                'nomor' => '1740/131013/SK/V/2021',
+                'tahun' => '2021',
+                'deskripsi' => 'Surat Keputusan pendirian resmi Unit Layanan Kesehatan dan Bimbingan Konseling sebagai wadah konsultasi preventif dan kuratif.',
+                'file' => 'sk-pembentukan-2021.pdf',
+                'kategori' => 'SK Rektor'
+            ],
+        ];
+
+        // 2. DATA TENTANG KAMI (Dipindah ke sini)
+        $aboutWeb = [
+            'judul' => 'Menghubungkan Hati, Menyelesaikan Masalah',
+            'deskripsi' => 'SiBiling (Sistem Bimbingan Konseling) hadir sebagai respons digital terhadap kebutuhan kesehatan mental di lingkungan UBBG. Kami percaya bahwa setiap mahasiswa berhak mendapatkan akses layanan konseling yang privat, mudah, dan profesional tanpa stigma.',
+            'visi' => 'Mewujudkan civitas akademika UBBG yang sehat mental, berkarakter, dan prestatif melalui layanan konseling yang terintegrasi.'
+        ];
+
+        $tim = [
+            [
+                'nama' => 'Gempur Budi Anarki',
+                'role' => 'Back End Developer',
+                'prodi' => 'S1 Ilmu Komputer',
+                'foto' => 'images/gempur.png', 
+                'bio' => 'Bertanggung jawab merancang arsitektur server yang kokoh, keamanan data, serta memastikan logika sistem berjalan efisien dan stabil.',
+                'github' => 'https://github.com/gempurbudianarki',
+            ],
+            [
+                'nama' => 'Muhamad Adzky Maulana',
+                'role' => 'Front End Developer',
+                'prodi' => 'S1 Ilmu Komputer',
+                'foto' => 'images/adzky.png', 
+                'bio' => 'Mengubah desain menjadi antarmuka web yang responsif, interaktif, dan memastikan pengalaman pengguna (UX) yang mulus di berbagai perangkat.',
+                'github' => 'https://github.com/kyyyyyykyyy', 
+            ],
+            [
+                'nama' => 'Farhan Alfarisi',
+                'role' => 'UI/UX Designer',
+                'prodi' => 'S1 Ilmu Komputer',
+                'foto' => 'images/farhan.png', 
+                'bio' => 'Menciptakan desain visual yang estetis dan intuitif, menjembatani kebutuhan pengguna dengan solusi tampilan yang modern dan mudah dipahami.',
+                'github' => 'https://github.com/kyyyyyykyyy',
+            ],
+        ];
+
+        // Return ke view welcome dengan membawa semua data
+        return view('welcome', compact('dokumen', 'aboutWeb', 'tim'));
     }
 
-    /**
-     * Update the user's profile information.
-     */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    // Method lain biarkan saja (untuk jaga-jaga kalau diakses langsung via URL lama)
+    public function landasanHukum()
     {
-        $user = $request->user();
-        
-        // 1. Validasi Tambahan (Foto & No HP)
-        $request->validate([
-            'avatar' => ['nullable', 'image', 'max:2048'], // Max 2MB
-            'no_hp' => ['nullable', 'string', 'max:15'],
-        ]);
-
-        // 2. Isi data standar (nama/email)
-        $user->fill($request->validated());
-
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-        }
-
-        // 3. LOGIKA UPLOAD FOTO PROFIL
-        if ($request->hasFile('avatar')) {
-            // Hapus foto lama jika bukan default/kosong
-            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
-                Storage::disk('public')->delete($user->avatar);
-            }
-
-            // Simpan foto baru
-            $path = $request->file('avatar')->store('avatars', 'public');
-            $user->avatar = $path;
-        }
-
-        // Simpan perubahan User
-        $user->save();
-
-        // 4. UPDATE NO HP MAHASISWA (Jika user adalah mahasiswa)
-        if ($request->has('no_hp') && $user->mahasiswa) {
-            $user->mahasiswa->update([
-                'no_hp' => $request->no_hp
-            ]);
-        }
-
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        // ... (biarkan atau redirect ke welcome#landasan)
+        return redirect()->route('welcome')->withFragment('landasan');
     }
 
-    /**
-     * Delete the user's account.
-     */
-    public function destroy(Request $request): RedirectResponse
+    public function tentangKami()
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
-
-        $user = $request->user();
-
-        Auth::logout();
-
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Redirect::to('/');
+        // ... (biarkan atau redirect ke welcome#tentang)
+        return redirect()->route('welcome')->withFragment('tentang');
     }
 }

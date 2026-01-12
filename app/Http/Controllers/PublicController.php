@@ -8,12 +8,7 @@ class PublicController extends Controller
 {
     public function welcome()
     {
-        return view('welcome');
-    }
-
-    public function landasanHukum()
-    {
-        // Data Dokumen SK & SOP
+        // === 1. DATA DOKUMEN ===
         $dokumen = [
             [
                 'judul' => 'SOP Layanan Bimbingan Konseling',
@@ -41,18 +36,14 @@ class PublicController extends Controller
             ],
         ];
 
-        return view('public.landasan-hukum', compact('dokumen'));
-    }
-
-    public function tentangKami()
-    {
+        // === 2. DATA TENTANG KAMI ===
         $aboutWeb = [
             'judul' => 'Menghubungkan Hati, Menyelesaikan Masalah',
             'deskripsi' => 'SiBiling (Sistem Bimbingan Konseling) hadir sebagai respons digital terhadap kebutuhan kesehatan mental di lingkungan UBBG. Kami percaya bahwa setiap mahasiswa berhak mendapatkan akses layanan konseling yang privat, mudah, dan profesional tanpa stigma.',
             'visi' => 'Mewujudkan civitas akademika UBBG yang sehat mental, berkarakter, dan prestatif melalui layanan konseling yang terintegrasi.'
         ];
 
-        // --- DATA TIM PENGEMBANG (BAHASA INDONESIA PRO) ---
+        // === 3. DATA TIM (DESKRIPSI LENGKAP KEMBALI) ===
         $tim = [
             [
                 'nama' => 'Gempur Budi Anarki',
@@ -62,6 +53,7 @@ class PublicController extends Controller
                 'bio' => 'Bertanggung jawab merancang arsitektur server yang kokoh, keamanan data, serta memastikan logika sistem berjalan efisien dan stabil.',
                 'github' => 'https://github.com/gempurbudianarki',
             ],
+
             [
                 'nama' => 'Muhamad Adzky Maulana',
                 'role' => 'Front End Developer',
@@ -70,16 +62,17 @@ class PublicController extends Controller
                 'bio' => 'Mengubah desain menjadi antarmuka web yang responsif, interaktif, dan memastikan pengalaman pengguna (UX) yang mulus di berbagai perangkat.',
                 'github' => 'https://github.com/kyyyyyykyyy', 
             ],
+
             [
                 'nama' => 'Farhan Alfarisi',
                 'role' => 'UI/UX Designer',
                 'prodi' => 'S1 Ilmu Komputer',
                 'foto' => 'images/farhan.png', 
                 'bio' => 'Menciptakan desain visual yang estetis dan intuitif, menjembatani kebutuhan pengguna dengan solusi tampilan yang modern dan mudah dipahami.',
-                'github' => 'https://github.com/kyyyyyykyyy', // Link sementara sama kayak Adzky (sesuai request)
+                'github' => 'https://github.com/PojokHanS', 
             ],
         ];
 
-        return view('public.tentang-kami', compact('aboutWeb', 'tim'));
+        return view('welcome', compact('dokumen', 'aboutWeb', 'tim'));
     }
 }
